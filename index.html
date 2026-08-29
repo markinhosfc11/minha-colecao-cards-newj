@@ -587,11 +587,23 @@
   </div>
 </div>
 <!-- FIM FEEDBACK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.52.1/dist/umd/supabase.js"></script>
 <script>
-const SUPABASE_URL = 'https://zxxsbwuvmjarhexzwphk.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4eHNid3V2bWphcmhleHp3cGhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzMDUsImV4cCI6MjEwMzQ1OTMwNX0.aknMH9onYRKIG9Rc5RI0smzRcE5GYM84vxVp8_bp_Bo';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let SUPABASE_URL, SUPABASE_ANON_KEY, sb;
+try{
+  SUPABASE_URL = 'https://zxxsbwuvmjarhexzwphk.supabase.co';
+  SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4eHNid3V2bWphcmhleHp3cGhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzMDUsImV4cCI6MjEwMzQ1OTMwNX0.aknMH9onYRKIG9Rc5RI0smzRcE5GYM84vxVp8_bp_Bo';
+  if(!window.supabase || !window.supabase.createClient){ throw new Error('Biblioteca do Supabase não carregou (window.supabase indefinido).'); }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}catch(e){
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#101216;color:#f3f0e6;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:sans-serif;';
+    banner.innerHTML = '<div style="max-width:420px;"><h2 style="color:#e0555f;">Erro ao carregar o app</h2><p>' + (e && e.message ? e.message : 'Erro desconhecido') + '</p><p style="font-size:12px;color:#9a9dab;">Abra o console do navegador (F12) para mais detalhes e mande um print para o suporte.</p></div>';
+    document.body.appendChild(banner);
+  });
+  console.error('Falha ao iniciar Supabase:', e);
+}
 const PHOTO_BUCKET = 'card-photos';
 
 const I18N = {
@@ -760,13 +772,13 @@ function askConfirm(title, desc, okLabel){
 
 /* ---------- DATA ---------- */
 async function loadCardsFromDb(){
-  const { data, error } = await supabase.from('cards').select('*').order('criado_em', { ascending:false });
+  const { data, error } = await sb.from('cards').select('*').order('criado_em', { ascending:false });
   cards = error ? [] : data.map(fromDb);
   return !error;
 }
 async function loadData(){
   const cardsOk = await loadCardsFromDb();
-  const { data: s, error: sErr } = await supabase.from('settings').select('*').eq('id',1).single();
+  const { data: s, error: sErr } = await sb.from('settings').select('*').eq('id',1).single();
   settings = sErr ? { username:null, pin:null } : { username:s.username, pin:s.pin };
   renderCategoryNav();
   applyTranslations();
@@ -775,7 +787,7 @@ async function loadData(){
     toast(lang==='en' ? "Couldn't reach the database — reload the page." : 'Não consegui acessar o banco de dados — recarregue a página.', 'error');
   }
 }
-async function saveSettings(){ await supabase.from('settings').update({ username: settings.username, pin: settings.pin }).eq('id',1); }
+async function saveSettings(){ await sb.from('settings').update({ username: settings.username, pin: settings.pin }).eq('id',1); }
 
 function nextRegistro(){
   const nums = cards.map(c => parseInt((c.registro||'0').replace(/\D/g,'')) || 0);
@@ -1031,14 +1043,14 @@ wireDropzone('frente'); wireDropzone('verso');
 async function uploadPhotoToStorage(id, side, dataUrl){
   const blob = await (await fetch(dataUrl)).blob();
   const path = `${id}/${side}.jpg`;
-  const { error } = await supabase.storage.from(PHOTO_BUCKET).upload(path, blob, { upsert:true, contentType:'image/jpeg' });
+  const { error } = await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { upsert:true, contentType:'image/jpeg' });
   if(error) throw error;
-  const { data } = supabase.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+  const { data } = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path);
   return data.publicUrl + '?t=' + Date.now();
 }
 async function deletePhotoFromStorage(id, side){
   const path = `${id}/${side}.jpg`;
-  try{ await supabase.storage.from(PHOTO_BUCKET).remove([path]); }catch(e){}
+  try{ await sb.storage.from(PHOTO_BUCKET).remove([path]); }catch(e){}
 }
 
 /* ---------- CARD MODAL ---------- */
@@ -1092,10 +1104,10 @@ async function saveCard(){
   try{
     let id = editingId;
     if(id){
-      const { error } = await supabase.from('cards').update(toDb(data)).eq('id', id);
+      const { error } = await sb.from('cards').update(toDb(data)).eq('id', id);
       if(error) throw error;
     } else {
-      const { data: inserted, error } = await supabase.from('cards').insert(toDb(data)).select().single();
+      const { data: inserted, error } = await sb.from('cards').insert(toDb(data)).select().single();
       if(error) throw error;
       id = inserted.id;
     }
@@ -1104,11 +1116,11 @@ async function saveCard(){
       if(st.pending){
         const url = await uploadPhotoToStorage(id, side, st.pending);
         const col = side==='verso' ? { foto_verso_url:url, has_foto_verso:true } : { foto_url:url, has_foto:true };
-        await supabase.from('cards').update(col).eq('id', id);
+        await sb.from('cards').update(col).eq('id', id);
       } else if(st.removed){
         await deletePhotoFromStorage(id, side);
         const col = side==='verso' ? { foto_verso_url:null, has_foto_verso:false } : { foto_url:null, has_foto:false };
-        await supabase.from('cards').update(col).eq('id', id);
+        await sb.from('cards').update(col).eq('id', id);
       }
     }
     await loadCardsFromDb();
@@ -1126,7 +1138,7 @@ async function deleteCard(){
   const ok = await askConfirm(t('confirm_delete_title'), `${c?.nome||''} — ${t('confirm_delete_title')}?`, t('btn_delete'));
   if(!ok) return;
   const id = editingId;
-  await supabase.from('cards').delete().eq('id', id);
+  await sb.from('cards').delete().eq('id', id);
   if(c?.fotoUrl) await deletePhotoFromStorage(id, 'frente');
   if(c?.fotoVersoUrl) await deletePhotoFromStorage(id, 'verso');
   await loadCardsFromDb();
@@ -1213,14 +1225,14 @@ async function importBackupFile(file){
     if(!Array.isArray(data.cards)) throw new Error('invalid');
     const ok = await askConfirm(t('confirm_restore_title'), t('confirm_restore_desc'), t('backup_import'));
     if(!ok) return;
-    await supabase.from('cards').delete().not('id','is',null);
+    await sb.from('cards').delete().not('id','is',null);
     const rows = data.cards.map(c => ({
       id: c.id, registro:c.registro, nome:c.nome, categoria:c.categoria, time:c.time, colecao:c.colecao,
       numero_card:c.numeroCard, modelo:c.modelo, condicao:c.condicao, quantidade:c.quantidade,
       preco_meu:c.precoMeu, preco_mercado:c.precoMercado, data_card:c.dataCard, venda:c.venda, descricao:c.descricao,
       has_foto:c.hasFoto, has_foto_verso:c.hasFotoVerso, foto_url:c.fotoUrl, foto_verso_url:c.fotoVersoUrl,
     }));
-    if(rows.length) await supabase.from('cards').insert(rows);
+    if(rows.length) await sb.from('cards').insert(rows);
     await loadCardsFromDb();
     toast(t('toast_restore_ok'), 'success');
     renderCategoryNav();
@@ -1238,7 +1250,7 @@ async function submitFeedback(){
   if(!message){ toast(t('feedback_required'), 'error'); return; }
   $('feedbackSubmit').disabled = true;
   try{
-    const { error } = await supabase.from('feedback').insert({ name: name || null, message });
+    const { error } = await sb.from('feedback').insert({ name: name || null, message });
     if(error) throw error;
     $('feedbackForm').style.display = 'none';
     $('feedbackThanks').style.display = 'block';
@@ -1248,7 +1260,7 @@ async function submitFeedback(){
   finally{ $('feedbackSubmit').disabled = false; }
 }
 async function openFeedbackList(){
-  const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending:false });
+  const { data, error } = await sb.from('feedback').select('*').order('created_at', { ascending:false });
   const list = error ? [] : data;
   $('feedbackListContent').innerHTML = list.length === 0
     ? `<p style="color:var(--text-muted); font-size:13px;">${t('feedback_empty')}</p>`
@@ -1259,7 +1271,7 @@ async function openFeedbackList(){
         </div>`).join('');
   $('feedbackListContent').querySelectorAll('.fb-del').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
-      await supabase.from('feedback').delete().eq('id', btn.dataset.id);
+      await sb.from('feedback').delete().eq('id', btn.dataset.id);
       openFeedbackList();
     });
   });
