@@ -1322,6 +1322,7 @@ async function importBackupFile(file){
       numero_card:c.numeroCard, modelo:c.modelo, condicao:c.condicao, quantidade:c.quantidade,
       preco_meu:c.precoMeu, preco_mercado:c.precoMercado, data_card:c.dataCard, venda:c.venda, descricao:c.descricao,
       has_foto:c.hasFoto, has_foto_verso:c.hasFotoVerso, foto_url:c.fotoUrl, foto_verso_url:c.fotoVersoUrl,
+      criado_em: c.criadoEm ? new Date(c.criadoEm).toISOString() : new Date().toISOString(),
       user_id: currentUserId,
     }));
     if(rows.length) await sb.from('cards').insert(rows);
