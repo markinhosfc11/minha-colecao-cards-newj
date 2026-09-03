@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minha Coleção — Entrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.52.1/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --bg:#101216; --surface:#181b22; --surface-2:#20242e; --edge:#2f3542;
+    --gold:#c9a227; --gold-light:#e8c766; --holo-a:#7c5cff; --holo-b:#00d4b8;
+    --text:#f3f0e6; --text-muted:#9a9dab; --danger:#e0555f;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%; margin:0;}
+  body{
+    font-family:'Inter',sans-serif; color:var(--text); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; min-height:100vh;
+    position:relative; overflow:hidden; padding:20px;
+  }
+  h1,h2,.display{font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.03em;}
+
+  /* PAREDE DE EXPOSIÇÃO — cards ilustrados só em CSS */
+  .wall{position:fixed; inset:0; z-index:0; overflow:hidden;}
+  .wall::after{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 40%, rgba(16,18,22,0.55), rgba(10,11,14,0.92) 75%);}
+  .exhibit-card{
+    position:absolute; width:150px; height:210px; border-radius:12px;
+    background:linear-gradient(155deg, var(--surface-2), var(--bg));
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.7);
+  }
+  .exhibit-card::before{
+    content:""; position:absolute; inset:0; border-radius:12px; padding:1.5px;
+    background:linear-gradient(120deg, transparent 20%, var(--holo-a), var(--holo-b), var(--gold-light), transparent 80%);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; opacity:0.6;
+  }
+  .exhibit-card::after{
+    content:""; position:absolute; left:14px; right:14px; top:16px; bottom:44px;
+    border-radius:8px; background:linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+  }
+  .e1{top:6%; left:6%; transform:rotate(-9deg);}
+  .e2{top:10%; left:78%; transform:rotate(11deg);}
+  .e3{top:58%; left:2%; transform:rotate(7deg);}
+  .e4{top:64%; left:84%; transform:rotate(-8deg);}
+  .e5{top:-6%; left:38%; transform:rotate(4deg) scale(0.85);}
+  .e6{top:70%; left:42%; transform:rotate(-4deg) scale(0.9);}
+  .e7{top:32%; left:-4%; transform:rotate(-14deg) scale(0.75);}
+  .e8{top:36%; left:92%; transform:rotate(13deg) scale(0.75);}
+
+  /* PAINEL CENTRAL */
+  .panel{
+    position:relative; z-index:1; width:100%; max-width:400px;
+    background:rgba(24,27,34,0.72); backdrop-filter:blur(18px);
+    border:1px solid var(--edge); border-radius:18px; padding:34px 30px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,0.8);
+  }
+  .brand-row{display:flex; align-items:center; gap:12px; margin-bottom:6px;}
+  .brand-mark{
+    width:38px; height:38px; border-radius:9px; flex-shrink:0;
+    background:linear-gradient(150deg, var(--gold), var(--holo-a) 120%);
+    display:flex; align-items:center; justify-content:center; font-size:18px; color:#0e0f12; font-weight:700;
+  }
+  .brand-row h1{margin:0; font-size:21px; line-height:1.1;}
+  .tagline{color:var(--text-muted); font-size:13px; margin:0 0 26px; line-height:1.5;}
+
+  .oauth-btn{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+    background:var(--surface-2); border:1px solid var(--edge); color:var(--text);
+    padding:12px 16px; border-radius:10px; font-size:13.5px; font-weight:600; cursor:pointer;
+    margin-bottom:10px; transition:border-color .15s ease, background .15s ease;
+  }
+  .oauth-btn:hover{border-color:var(--gold); background:var(--surface);}
+  .oauth-btn svg{flex-shrink:0;}
+
+  .divider{display:flex; align-items:center; gap:10px; margin:20px 0; color:var(--text-muted); font-size:11px; text-transform:uppercase; letter-spacing:0.08em;}
+  .divider::before, .divider::after{content:""; flex:1; height:1px; background:var(--edge);}
+
+  .guest-row{display:flex; gap:8px;}
+  .guest-row input{
+    flex:1; background:var(--bg); border:1px solid var(--edge); color:var(--text);
+    padding:11px 12px; border-radius:9px; font-size:13.5px;
+  }
+  .guest-row input:focus{outline:none; border-color:var(--gold);}
+  .guest-row button{
+    background:transparent; border:1px solid var(--gold); color:var(--gold-light);
+    padding:0 16px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  .guest-row button:hover{background:rgba(201,162,39,0.1);}
+  .guest-hint{font-size:11px; color:var(--text-muted); margin-top:8px;}
+  .err-msg{font-size:12px; color:var(--danger); margin-top:8px; display:none;}
+
+  @media (max-width:480px){
+    .exhibit-card{width:110px; height:154px;}
+    .panel{padding:28px 22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wall" id="wall">
+  <div class="exhibit-card e1"></div>
+  <div class="exhibit-card e2"></div>
+  <div class="exhibit-card e3"></div>
+  <div class="exhibit-card e4"></div>
+  <div class="exhibit-card e5"></div>
+  <div class="exhibit-card e6"></div>
+  <div class="exhibit-card e7"></div>
+  <div class="exhibit-card e8"></div>
+</div>
+
+<div class="panel">
+  <div class="brand-row">
+    <div class="brand-mark">◆</div>
+    <h1>Minha Coleção</h1>
+  </div>
+  <p class="tagline">Cadastre, avalie e exponha sua coleção de cards. Crie sua conta e monte a sua galeria.</p>
+
+  <button class="oauth-btn" id="googleBtn">
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 16.3 3 9.7 7.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 36.6 26.7 37.5 24 37.5c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.6 40.5 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.2 5.2C40.3 36.4 45 30.8 45 24c0-1.4-.1-2.4-.4-3.5z"/></svg>
+    Continuar com Google
+  </button>
+  <button class="oauth-btn" id="microsoftBtn">
+    <svg width="18" height="18" viewBox="0 0 23 23"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg>
+    Continuar com Microsoft
+  </button>
+
+  <div class="divider">ou</div>
+
+  <label style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; font-family:'JetBrains Mono',monospace;">Visitar como convidado</label>
+  <div class="guest-row" style="margin-top:7px;">
+    <input type="text" id="guestUsername" placeholder="nome de usuário do colecionador">
+    <button id="guestBtn">Visitar</button>
+  </div>
+  <p class="guest-hint">Você poderá ver a coleção, sem editar nada.</p>
+  <p class="err-msg" id="errMsg"></p>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://zxxsbwuvmjarhexzwphk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4eHNid3V2bWphcmhleHp3cGhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzMDUsImV4cCI6MjEwMzQ1OTMwNX0.aknMH9onYRKIG9Rc5RI0smzRcE5GYM84vxVp8_bp_Bo';
+let sb;
+try{
+  if(!window.supabase || !window.supabase.createClient){ throw new Error('Biblioteca do Supabase não carregou.'); }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}catch(e){ console.error(e); }
+
+function showError(msg){
+  const el = document.getElementById('errMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+document.getElementById('googleBtn').addEventListener('click', async ()=>{
+  if(!sb) return showError('Não foi possível conectar ao servidor.');
+  const { error } = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin + '/index.html' } });
+  if(error) showError(error.message);
+});
+document.getElementById('microsoftBtn').addEventListener('click', async ()=>{
+  if(!sb) return showError('Não foi possível conectar ao servidor.');
+  const { error } = await sb.auth.signInWithOAuth({ provider:'azure', options:{ redirectTo: window.location.origin + '/index.html' } });
+  if(error) showError(error.message);
+});
+document.getElementById('guestBtn').addEventListener('click', async ()=>{
+  const uname = document.getElementById('guestUsername').value.trim();
+  if(!uname) return showError('Digite um nome de usuário.');
+  if(!sb) return showError('Não foi possível conectar ao servidor.');
+  const { data, error } = await sb.from('profiles').select('id, username').eq('username', uname).single();
+  if(error || !data){ showError('Nenhum colecionador encontrado com esse nome.'); return; }
+  window.location.href = 'index.html?view=' + encodeURIComponent(data.id);
+});
+document.getElementById('guestUsername').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('guestBtn').click(); });
+</script>
+</body>
+</html>
