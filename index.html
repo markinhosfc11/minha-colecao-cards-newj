@@ -59,7 +59,8 @@
   .brand-text .eyebrow{font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:var(--gold); text-transform:uppercase;}
   .brand-text h1{margin:2px 0 0; font-size:19px; line-height:1.1;}
 
-  .tabbar{display:flex; gap:4px; padding:14px 12px 4px;}
+  .tabbar{display:flex; flex-wrap:wrap; gap:4px; padding:14px 12px 4px;}
+  .tabbar .tab-btn{flex:1 1 calc(50% - 4px); min-width:70px;}
   .tab-btn{
     flex:1; background:none; border:1px solid var(--edge); color:var(--text-muted);
     padding:8px 6px; border-radius:8px; font-size:11.5px; font-weight:600; cursor:pointer;
@@ -364,6 +365,7 @@
     <button class="tab-btn active" id="tabColecaoBtn" data-i18n="tab_collection">Coleção</button>
     <button class="tab-btn" id="tabGraficosBtn" data-i18n="tab_graficos">Gráficos</button>
     <button class="tab-btn" id="tabMercadoBtn" data-i18n="tab_market">Mercado</button>
+    <button class="tab-btn" id="tabExplorarBtn" data-i18n="tab_explorar" style="display:none;">Explorar</button>
     <button class="tab-btn" id="tabPerfilBtn" data-i18n="tab_perfil" style="display:none;">Perfil</button>
   </div>
   <div class="nav-section" id="navSection">
@@ -449,8 +451,21 @@
       <div class="grid" id="marketplaceGrid"></div>
     </div>
 
+    <!-- PAGE: EXPLORAR (buscar colecionadores) -->
+    <div class="page" id="pageExplorar">
+      <div class="profile-card" style="max-width:520px;">
+        <h3 data-i18n="profile_search_title" style="margin-top:0;">Buscar colecionadores</h3>
+        <div class="guest-row" style="display:flex; gap:8px;">
+          <input type="text" id="userSearchInput" placeholder="nome de usuário..." style="flex:1; background:var(--bg); border:1px solid var(--edge); color:var(--text); padding:9px 11px; border-radius:8px;">
+          <button class="btn secondary" id="userSearchBtn" data-i18n="profile_search_btn">Buscar</button>
+        </div>
+        <div id="userSearchResults" style="margin-top:14px; display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    </div>
+
     <!-- PAGE: PERFIL -->
     <div class="page" id="pagePerfil">
+      <div class="stats" id="profileStats" style="padding:0 0 16px;"></div>
       <div class="profile-layout">
         <div class="profile-card">
           <h3 data-i18n="profile_my_data" style="margin-top:0;">Meus dados</h3>
@@ -486,15 +501,6 @@
             <input type="text" id="p_newUsername" maxlength="24">
             <button class="btn" id="saveUsernameBtn" style="margin-top:8px;" data-i18n="profile_save">Salvar perfil</button>
           </div>
-        </div>
-
-        <div class="profile-card">
-          <h3 data-i18n="profile_search_title" style="margin-top:0;">Buscar colecionadores</h3>
-          <div class="guest-row" style="display:flex; gap:8px;">
-            <input type="text" id="userSearchInput" placeholder="nome de usuário..." style="flex:1; background:var(--bg); border:1px solid var(--edge); color:var(--text); padding:9px 11px; border-radius:8px;">
-            <button class="btn secondary" id="userSearchBtn" data-i18n="profile_search_btn">Buscar</button>
-          </div>
-          <div id="userSearchResults" style="margin-top:14px; display:flex; flex-direction:column; gap:8px;"></div>
         </div>
       </div>
     </div>
@@ -709,6 +715,7 @@ const I18N = {
     profile_phone:'Telefone (visível em anúncios de venda)', profile_bio:'Sobre você', profile_save:'Salvar perfil',
     profile_username_label:'Nome de usuário', profile_edit_username:'Editar',
     profile_search_title:'Buscar colecionadores', profile_search_btn:'Buscar',
+    tab_explorar:'Explorar', profile_total_cards:'Cards cadastrados', profile_for_sale:'À venda',
     nav_label:'Categorias', nav_all:'Todas',
     filter_for_sale:'Somente à venda',
     owner_logout:'Sair', back_to_landing:'Voltar',
@@ -755,6 +762,7 @@ const I18N = {
     profile_phone:'Phone (visible on sale listings)', profile_bio:'About you', profile_save:'Save profile',
     profile_username_label:'Username', profile_edit_username:'Edit',
     profile_search_title:'Search collectors', profile_search_btn:'Search',
+    tab_explorar:'Explore', profile_total_cards:'Cards registered', profile_for_sale:'For sale',
     nav_label:'Categories', nav_all:'All',
     filter_for_sale:'For sale only',
     owner_logout:'Sign out', back_to_landing:'Back',
@@ -941,6 +949,7 @@ async function initAuth(){
     $('guestBanner').style.display = 'flex';
   }
   $('tabPerfilBtn').style.display = currentUserId ? 'inline-block' : 'none';
+  $('tabExplorarBtn').style.display = currentUserId ? 'inline-block' : 'none';
   applyTranslations();
   return true;
 }
@@ -1124,19 +1133,23 @@ function setTab(tab){
   $('tabColecaoBtn').classList.toggle('active', tab==='colecao');
   $('tabGraficosBtn').classList.toggle('active', tab==='graficos');
   $('tabMercadoBtn').classList.toggle('active', tab==='mercado');
+  $('tabExplorarBtn').classList.toggle('active', tab==='explorar');
   $('tabPerfilBtn').classList.toggle('active', tab==='perfil');
   $('pageColecao').classList.toggle('active', tab==='colecao');
   $('pageGraficos').classList.toggle('active', tab==='graficos');
   $('pageMercado').classList.toggle('active', tab==='mercado');
+  $('pageExplorar').classList.toggle('active', tab==='explorar');
   $('pagePerfil').classList.toggle('active', tab==='perfil');
   $('navSection').style.display = tab==='colecao' ? '' : 'none';
   if(tab==='graficos') renderGraficosTab();
   if(tab==='mercado') loadMarketplace();
   if(tab==='perfil') loadProfileTab();
+  if(tab==='explorar'){ $('userSearchResults').innerHTML = ''; $('userSearchInput').value = ''; }
 }
 $('tabColecaoBtn').addEventListener('click', ()=> setTab('colecao'));
 $('tabGraficosBtn').addEventListener('click', ()=> setTab('graficos'));
 $('tabMercadoBtn').addEventListener('click', ()=> setTab('mercado'));
+$('tabExplorarBtn').addEventListener('click', ()=> setTab('explorar'));
 $('tabPerfilBtn').addEventListener('click', ()=> setTab('perfil'));
 
 function renderGraficosTab(){
@@ -1563,8 +1576,13 @@ async function loadProfileTab(){
   $('currentUsernameDisplay').textContent = '@' + myProfileCache.username;
   $('usernameEditRow').style.display = 'none';
   $('p_newUsername').value = myProfileCache.username;
-  $('userSearchResults').innerHTML = '';
-  $('userSearchInput').value = '';
+
+  const { count: totalCount } = await sb.from('cards').select('*', { count:'exact', head:true }).eq('user_id', currentUserId);
+  const { count: saleCount } = await sb.from('cards').select('*', { count:'exact', head:true }).eq('user_id', currentUserId).eq('venda','sim');
+  $('profileStats').innerHTML = `
+    <div class="stat"><div class="label">${t('profile_total_cards')}</div><div class="value">${totalCount || 0}</div></div>
+    <div class="stat"><div class="label">${t('profile_for_sale')}</div><div class="value">${saleCount || 0}</div></div>
+  `;
 }
 
 $('avatarUploadBtn').addEventListener('click', ()=> $('avatarInput').click());
