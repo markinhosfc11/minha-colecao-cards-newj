@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minha Coleção — Entrar</title>
+<title>ColeCard — Entrar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.52.1/dist/umd/supabase.js"></script>
@@ -49,6 +49,23 @@
   .e6{top:70%; left:42%; transform:rotate(-4deg) scale(0.9);}
   .e7{top:32%; left:-4%; transform:rotate(-14deg) scale(0.75);}
   .e8{top:36%; left:92%; transform:rotate(13deg) scale(0.75);}
+  .e9{top:82%; left:14%; transform:rotate(10deg) scale(0.65);}
+  .e10{top:2%; left:60%; transform:rotate(-6deg) scale(0.65);}
+
+  .cat-chip{
+    position:absolute; z-index:2;
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    padding:6px 12px; border-radius:20px; color:#0e0f12; font-weight:700;
+    box-shadow:0 10px 24px -8px rgba(0,0,0,0.6); opacity:0.92;
+    animation:float 6s ease-in-out infinite;
+  }
+  @keyframes float{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+  .c1{top:16%; left:20%; background:#4caf7d; animation-delay:0s;}
+  .c2{top:22%; left:68%; background:#ff9f43; animation-delay:1.2s;}
+  .c3{top:74%; left:8%; background:#c0392b; animation-delay:2s;}
+  .c4{top:80%; left:70%; background:#7c5cff; animation-delay:0.6s;}
+  .c5{top:48%; left:88%; background:#e0555f; animation-delay:1.8s;}
+  @media (max-width:700px){ .cat-chip{display:none;} }
 
   /* PAINEL CENTRAL */
   .panel{
@@ -58,13 +75,11 @@
     box-shadow:0 30px 70px -20px rgba(0,0,0,0.8);
   }
   .brand-row{display:flex; align-items:center; gap:12px; margin-bottom:6px;}
-  .brand-mark{
-    width:38px; height:38px; border-radius:9px; flex-shrink:0;
-    background:linear-gradient(150deg, var(--gold), var(--holo-a) 120%);
-    display:flex; align-items:center; justify-content:center; font-size:18px; color:#0e0f12; font-weight:700;
-  }
-  .brand-row h1{margin:0; font-size:21px; line-height:1.1;}
-  .tagline{color:var(--text-muted); font-size:13px; margin:0 0 26px; line-height:1.5;}
+  .brand-row h1{margin:0; font-size:23px; line-height:1.1;}
+  .brand-row h1 .gold{color:var(--gold-light);}
+  .tagline{color:var(--text-muted); font-size:13px; margin:0 0 10px; line-height:1.5;}
+  .feature-list{list-style:none; padding:0; margin:0 0 24px; display:flex; flex-direction:column; gap:6px;}
+  .feature-list li{font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:8px;}
 
   .oauth-btn{
     width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
@@ -109,14 +124,40 @@
   <div class="exhibit-card e6"></div>
   <div class="exhibit-card e7"></div>
   <div class="exhibit-card e8"></div>
+  <div class="exhibit-card e9"></div>
+  <div class="exhibit-card e10"></div>
+  <span class="cat-chip c1">Futebol</span>
+  <span class="cat-chip c2">NBA</span>
+  <span class="cat-chip c3">UFC</span>
+  <span class="cat-chip c4">TCG</span>
+  <span class="cat-chip c5">WWE</span>
 </div>
 
 <div class="panel">
   <div class="brand-row">
-    <div class="brand-mark">◆</div>
-    <h1>Minha Coleção</h1>
+    <svg width="38" height="38" viewBox="0 0 64 64">
+      <defs>
+        <linearGradient id="holoL" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#7c5cff"/><stop offset="50%" stop-color="#00d4b8"/><stop offset="100%" stop-color="#e8c766"/>
+        </linearGradient>
+        <linearGradient id="bgL" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#20242e"/><stop offset="100%" stop-color="#101216"/>
+        </linearGradient>
+      </defs>
+      <rect x="1" y="1" width="62" height="62" rx="16" fill="url(#bgL)" stroke="url(#holoL)" stroke-width="1.5"/>
+      <g transform="translate(32,32)">
+        <rect x="-19" y="-14" width="20" height="28" rx="4" transform="rotate(-14)" fill="#181b22" stroke="url(#holoL)" stroke-width="1.3"/>
+        <rect x="-1" y="-14" width="20" height="28" rx="4" transform="rotate(11)" fill="#20242e" stroke="#e8c766" stroke-width="1.3"/>
+      </g>
+    </svg>
+    <h1>Cole<span class="gold">Card</span></h1>
   </div>
   <p class="tagline">Cadastre, avalie e exponha sua coleção de cards. Crie sua conta e monte a sua galeria.</p>
+  <ul class="feature-list">
+    <li>🔍 Descubra coleções de outros colecionadores</li>
+    <li>📈 Acompanhe a valorização dos seus cards</li>
+    <li>🛒 Veja cards à venda de toda a plataforma</li>
+  </ul>
 
   <button class="oauth-btn" id="googleBtn">
     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 16.3 3 9.7 7.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 36.6 26.7 37.5 24 37.5c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.6 40.5 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.2 5.2C40.3 36.4 45 30.8 45 24c0-1.4-.1-2.4-.4-3.5z"/></svg>
