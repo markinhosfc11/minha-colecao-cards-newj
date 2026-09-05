@@ -145,6 +145,35 @@
   .page.active{display:block;}
 
   .charts-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:18px; margin-top:16px;}
+
+  /* PERFIL */
+  .profile-layout{display:grid; grid-template-columns:1.1fr 1fr; gap:18px; align-items:start;}
+  @media (max-width:900px){.profile-layout{grid-template-columns:1fr;}}
+  .profile-card{background:var(--surface); border:1px solid var(--edge-soft); border-radius:var(--radius); padding:20px;}
+  .avatar-row{display:flex; align-items:center; gap:16px; margin-bottom:18px;}
+  .avatar-preview{
+    width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    background:var(--surface-2); border:2px solid var(--edge);
+    display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:10px; text-align:center;
+  }
+  .avatar-preview img{width:100%; height:100%; object-fit:cover;}
+  .username-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:20px; padding-top:16px; border-top:1px dashed var(--edge);}
+  .search-result-item{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px;
+    background:var(--surface-2); cursor:pointer; transition:background .12s ease;
+  }
+  .search-result-item:hover{background:var(--surface-3);}
+  .search-result-item .avatar-preview{width:34px; height:34px; font-size:8px;}
+  .search-result-item .info{flex:1; overflow:hidden;}
+  .search-result-item .info .uname{font-size:13px; font-weight:600; color:var(--text);}
+  .search-result-item .info .dname{font-size:11px; color:var(--text-dim);}
+  .seller-info{display:flex; align-items:center; gap:12px; background:var(--surface-2); border-radius:10px; padding:12px; margin-bottom:14px;}
+  .seller-info .avatar-preview{width:40px; height:40px; font-size:8px;}
+  .unread-badge{
+    background:var(--danger); color:#fff; font-size:10px; font-weight:700;
+    min-width:16px; height:16px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+    padding:0 4px; margin-left:6px;
+  }
   .chart-card{background:var(--surface); border:1px solid var(--edge-soft); border-radius:var(--radius); padding:18px;}
   .chart-card h3{margin:0 0 14px; font-size:14px; color:var(--text);}
   .chart-card canvas{max-height:260px;}
@@ -318,16 +347,24 @@
 <aside class="sidebar" id="sidebar">
   <button class="sidebar-close" id="sidebarCloseBtn">&times;</button>
   <div class="brand">
-    <div class="brand-mark" id="brandMark">◆</div>
+    <div class="brand-mark" id="brandMark">
+      <svg width="20" height="20" viewBox="0 0 64 64">
+        <g transform="translate(32,32)">
+          <rect x="-19" y="-14" width="20" height="28" rx="4" transform="rotate(-14)" fill="rgba(14,15,18,0.35)" stroke="#0e0f12" stroke-width="1.6"/>
+          <rect x="-1" y="-14" width="20" height="28" rx="4" transform="rotate(11)" fill="rgba(14,15,18,0.2)" stroke="#0e0f12" stroke-width="1.6"/>
+        </g>
+      </svg>
+    </div>
     <div class="brand-text">
       <span class="eyebrow" data-i18n="brand_eyebrow">Catálogo pessoal</span>
-      <h1 data-i18n="brand_title">Minha Coleção</h1>
+      <h1><span class="wm-white">Cole</span><span class="wm-gold">Card</span></h1>
     </div>
   </div>
   <div class="tabbar">
     <button class="tab-btn active" id="tabColecaoBtn" data-i18n="tab_collection">Coleção</button>
     <button class="tab-btn" id="tabGraficosBtn" data-i18n="tab_graficos">Gráficos</button>
     <button class="tab-btn" id="tabMercadoBtn" data-i18n="tab_market">Mercado</button>
+    <button class="tab-btn" id="tabPerfilBtn" data-i18n="tab_perfil" style="display:none;">Perfil</button>
   </div>
   <div class="nav-section" id="navSection">
     <div class="nav-label" data-i18n="nav_label">Categorias</div>
@@ -344,7 +381,7 @@
       <button class="btn secondary" id="exportBtn" data-i18n="backup_export">Exportar</button>
       <button class="btn secondary" id="importBtn" data-i18n="backup_import">Restaurar</button>
     </div>
-    <button class="btn secondary" id="feedbackListBtn" data-i18n="feedback_owner_view" style="display:none;">Opiniões recebidas</button>
+    <button class="btn secondary" id="feedbackListBtn" style="display:none;"><span data-i18n="feedback_owner_view">Opiniões recebidas</span><span class="unread-badge" id="unreadBadge" style="display:none;">0</span></button>
     <input type="file" id="importInput" accept="application/json" style="display:none;">
   </div>
   <div class="sidebar-footer" id="guestBanner" style="display:none; padding:14px; border-top:1px solid var(--edge);">
@@ -410,6 +447,56 @@
     <div class="page" id="pageMercado">
       <p style="color:var(--text-muted); font-size:13px; margin:0 0 16px;" data-i18n="mercado_intro">Cards à venda por todos os colecionadores da plataforma.</p>
       <div class="grid" id="marketplaceGrid"></div>
+    </div>
+
+    <!-- PAGE: PERFIL -->
+    <div class="page" id="pagePerfil">
+      <div class="profile-layout">
+        <div class="profile-card">
+          <h3 data-i18n="profile_my_data" style="margin-top:0;">Meus dados</h3>
+          <div class="avatar-row">
+            <div class="avatar-preview" id="avatarPreview"></div>
+            <div>
+              <button class="btn secondary" id="avatarUploadBtn" data-i18n="profile_change_photo">Trocar foto</button>
+              <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+            </div>
+          </div>
+          <div class="field">
+            <label data-i18n="profile_display_name">Nome de exibição</label>
+            <input type="text" id="p_displayName" placeholder="Ex: Marcos Filipe">
+          </div>
+          <div class="field">
+            <label data-i18n="profile_phone">Telefone (visível em anúncios de venda)</label>
+            <input type="text" id="p_phone" placeholder="Ex: (11) 91234-5678">
+          </div>
+          <div class="field">
+            <label data-i18n="profile_bio">Sobre você</label>
+            <textarea id="p_bio" placeholder="Conte um pouco sobre sua coleção..."></textarea>
+          </div>
+          <button class="btn" id="saveProfileBtn" data-i18n="profile_save">Salvar perfil</button>
+
+          <div class="username-row">
+            <div>
+              <label data-i18n="profile_username_label">Nome de usuário</label>
+              <p class="mono" id="currentUsernameDisplay" style="margin:2px 0 0; color:var(--gold-light);"></p>
+            </div>
+            <button class="btn secondary" id="editUsernameBtn" data-i18n="profile_edit_username">Editar</button>
+          </div>
+          <div class="field" id="usernameEditRow" style="display:none;">
+            <input type="text" id="p_newUsername" maxlength="24">
+            <button class="btn" id="saveUsernameBtn" style="margin-top:8px;" data-i18n="profile_save">Salvar perfil</button>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <h3 data-i18n="profile_search_title" style="margin-top:0;">Buscar colecionadores</h3>
+          <div class="guest-row" style="display:flex; gap:8px;">
+            <input type="text" id="userSearchInput" placeholder="nome de usuário..." style="flex:1; background:var(--bg); border:1px solid var(--edge); color:var(--text); padding:9px 11px; border-radius:8px;">
+            <button class="btn secondary" id="userSearchBtn" data-i18n="profile_search_btn">Buscar</button>
+          </div>
+          <div id="userSearchResults" style="margin-top:14px; display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -617,7 +704,11 @@ const PHOTO_BUCKET = 'card-photos';
 const I18N = {
   pt:{
     brand_eyebrow:'Catálogo pessoal', brand_title:'Minha Coleção',
-    tab_collection:'Coleção', tab_graficos:'Gráficos', tab_market:'Mercado',
+    tab_collection:'Coleção', tab_graficos:'Gráficos', tab_market:'Mercado', tab_perfil:'Perfil',
+    profile_my_data:'Meus dados', profile_change_photo:'Trocar foto', profile_display_name:'Nome de exibição',
+    profile_phone:'Telefone (visível em anúncios de venda)', profile_bio:'Sobre você', profile_save:'Salvar perfil',
+    profile_username_label:'Nome de usuário', profile_edit_username:'Editar',
+    profile_search_title:'Buscar colecionadores', profile_search_btn:'Buscar',
     nav_label:'Categorias', nav_all:'Todas',
     filter_for_sale:'Somente à venda',
     owner_logout:'Sair', back_to_landing:'Voltar',
@@ -659,7 +750,11 @@ const I18N = {
   },
   en:{
     brand_eyebrow:'Personal catalog', brand_title:'My Collection',
-    tab_collection:'Collection', tab_graficos:'Charts', tab_market:'Market',
+    tab_collection:'Collection', tab_graficos:'Charts', tab_market:'Market', tab_perfil:'Profile',
+    profile_my_data:'My info', profile_change_photo:'Change photo', profile_display_name:'Display name',
+    profile_phone:'Phone (visible on sale listings)', profile_bio:'About you', profile_save:'Save profile',
+    profile_username_label:'Username', profile_edit_username:'Edit',
+    profile_search_title:'Search collectors', profile_search_btn:'Search',
     nav_label:'Categories', nav_all:'All',
     filter_for_sale:'For sale only',
     owner_logout:'Sign out', back_to_landing:'Back',
@@ -732,7 +827,22 @@ let marketplace = [];
 
 const $ = (id) => document.getElementById(id);
 const t = (key) => (I18N[lang] && I18N[lang][key]) || key;
-const fmt = (n) => (lang==='en' ? '$ ' : 'R$ ') + (Number(n)||0).toLocaleString(lang==='en' ? 'en-US' : 'pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+let brlToUsdRate = null;
+async function loadExchangeRate(){
+  try{
+    const res = await fetch('https://open.er-api.com/v6/latest/BRL');
+    const data = await res.json();
+    if(data && data.rates && data.rates.USD) brlToUsdRate = data.rates.USD;
+  }catch(e){ brlToUsdRate = null; }
+}
+const fmt = (n) => {
+  const val = Number(n) || 0;
+  if(lang==='en'){
+    const converted = brlToUsdRate ? val * brlToUsdRate : val;
+    return '$ ' + converted.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  return 'R$ ' + val.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+};
 
 function fromDb(r){
   return {
@@ -825,10 +935,12 @@ async function initAuth(){
     $('sidebarFooter').style.display = 'flex';
     $('guestBanner').style.display = 'none';
     $('feedbackListBtn').style.display = isAdmin ? 'inline-block' : 'none';
+    if(isAdmin) await refreshUnreadBadge();
   } else {
     $('sidebarFooter').style.display = 'none';
     $('guestBanner').style.display = 'flex';
   }
+  $('tabPerfilBtn').style.display = currentUserId ? 'inline-block' : 'none';
   applyTranslations();
   return true;
 }
@@ -1012,16 +1124,20 @@ function setTab(tab){
   $('tabColecaoBtn').classList.toggle('active', tab==='colecao');
   $('tabGraficosBtn').classList.toggle('active', tab==='graficos');
   $('tabMercadoBtn').classList.toggle('active', tab==='mercado');
+  $('tabPerfilBtn').classList.toggle('active', tab==='perfil');
   $('pageColecao').classList.toggle('active', tab==='colecao');
   $('pageGraficos').classList.toggle('active', tab==='graficos');
   $('pageMercado').classList.toggle('active', tab==='mercado');
+  $('pagePerfil').classList.toggle('active', tab==='perfil');
   $('navSection').style.display = tab==='colecao' ? '' : 'none';
   if(tab==='graficos') renderGraficosTab();
   if(tab==='mercado') loadMarketplace();
+  if(tab==='perfil') loadProfileTab();
 }
 $('tabColecaoBtn').addEventListener('click', ()=> setTab('colecao'));
 $('tabGraficosBtn').addEventListener('click', ()=> setTab('graficos'));
 $('tabMercadoBtn').addEventListener('click', ()=> setTab('mercado'));
+$('tabPerfilBtn').addEventListener('click', ()=> setTab('perfil'));
 
 function renderGraficosTab(){
   const list = getFilteredBase();
@@ -1070,10 +1186,10 @@ async function loadMarketplace(){
     return;
   }
   const userIds = [...new Set(data.map(r=>r.user_id).filter(Boolean))];
-  const { data: profiles } = await sb.from('profiles').select('id, username').in('id', userIds);
-  const usernameMap = {};
-  (profiles||[]).forEach(p=> usernameMap[p.id] = p.username);
-  marketplace = data.map(r => ({ ...fromDb(r), sellerUsername: usernameMap[r.user_id] || '—' }));
+  const { data: profiles } = await sb.from('profiles').select('id, username, display_name, avatar_url, phone').in('id', userIds);
+  const profileMap = {};
+  (profiles||[]).forEach(p=> profileMap[p.id] = p);
+  marketplace = data.map(r => ({ ...fromDb(r), seller: profileMap[r.user_id] || { username:'—' } }));
 
   grid.innerHTML = marketplace.map(c => `
     <div class="card-slot" data-mid="${c.id}">
@@ -1081,7 +1197,7 @@ async function loadMarketplace(){
         <div style="position:relative;">
           ${photoSlotHtml(c)}
           <span class="badge" style="background:${catColor(c.categoria)}">${catLabel(c.categoria)}</span>
-          <span class="badge sale">@${c.sellerUsername}</span>
+          <span class="badge sale">@${c.seller.username}</span>
         </div>
         <p class="card-name">${c.nome || '—'}</p>
         <p class="card-sub">${[c.time,c.colecao].filter(Boolean).join(' · ') || c.numeroCard || ''}</p>
@@ -1100,7 +1216,21 @@ function openMarketCardModal(id){
   const c = marketplace.find(x=>x.id===id);
   if(!c) return;
   editingId = null;
-  $('modalTitle').textContent = c.nome + ' — @' + c.sellerUsername;
+  const s = c.seller;
+  $('modalTitle').textContent = c.nome;
+  const sellerBlock = `<div class="seller-info">
+      <div class="avatar-preview">${s.avatar_url ? `<img src="${s.avatar_url}">` : '👤'}</div>
+      <div>
+        <div style="font-weight:600; font-size:13px;">${s.display_name || s.username}</div>
+        <div style="font-size:11.5px; color:var(--text-dim);">@${s.username}${s.phone ? ' · 📞 '+s.phone : ''}</div>
+      </div>
+    </div>`;
+  const existing = document.getElementById('sellerInfoBlock');
+  if(existing) existing.remove();
+  const wrapper = document.createElement('div');
+  wrapper.id = 'sellerInfoBlock';
+  wrapper.innerHTML = sellerBlock;
+  $('modalTitle').insertAdjacentElement('afterend', wrapper);
   $('f_nome').value = c.nome || ''; $('f_categoria').value = c.categoria || 'Futebol'; $('f_time').value = c.time || '';
   $('f_colecao').value = c.colecao || ''; $('f_numeroCard').value = c.numeroCard || ''; $('f_modelo').value = c.modelo || '';
   $('f_condicao').value = c.condicao || 'Mint'; $('f_registro').value = c.registro || ''; $('f_quantidade').value = c.quantidade || 1;
@@ -1206,6 +1336,8 @@ async function deletePhotoFromStorage(id, side){
 function openCardModal(id){
   editingId = id || null;
   photoState = { frente:{pending:null, removed:false}, verso:{pending:null, removed:false} };
+  const existingSellerBlock = document.getElementById('sellerInfoBlock');
+  if(existingSellerBlock) existingSellerBlock.remove();
   const c = id ? cards.find(x=>x.id===id) : null;
   $('modalTitle').textContent = c ? (isOwner ? t('modal_edit_title') : c.nome) : t('modal_add_title');
 
@@ -1352,6 +1484,12 @@ async function submitFeedback(){
   }catch(e){ toast(t('toast_save_error'), 'error'); }
   finally{ $('feedbackSubmit').disabled = false; }
 }
+async function refreshUnreadBadge(){
+  const { count } = await sb.from('feedback').select('*', { count:'exact', head:true }).eq('read', false);
+  const n = count || 0;
+  $('unreadBadge').textContent = n > 9 ? '9+' : String(n);
+  $('unreadBadge').style.display = n > 0 ? 'inline-flex' : 'none';
+}
 async function openFeedbackList(){
   const { data, error } = await sb.from('feedback').select('*').order('created_at', { ascending:false });
   const list = error ? [] : data;
@@ -1359,7 +1497,7 @@ async function openFeedbackList(){
     ? `<p style="color:var(--text-muted); font-size:13px;">${t('feedback_empty')}</p>`
     : list.map(f => `
         <div class="feedback-list-item" data-id="${f.id}">
-          <div class="fb-meta"><span>${f.name || t('feedback_anon')} · ${new Date(f.created_at).toLocaleDateString(lang==='en'?'en-US':'pt-BR')}</span><button class="fb-del" data-id="${f.id}">${t('btn_delete')}</button></div>
+          <div class="fb-meta"><span>${f.read ? '' : '🔵 '}${f.name || t('feedback_anon')} · ${new Date(f.created_at).toLocaleDateString(lang==='en'?'en-US':'pt-BR')}</span><button class="fb-del" data-id="${f.id}">${t('btn_delete')}</button></div>
           <div>${(f.message||'').replace(/</g,'&lt;')}</div>
         </div>`).join('');
   $('feedbackListContent').querySelectorAll('.fb-del').forEach(btn=>{
@@ -1369,6 +1507,11 @@ async function openFeedbackList(){
     });
   });
   $('feedbackListOverlay').classList.add('open');
+  const unreadIds = list.filter(f=>!f.read).map(f=>f.id);
+  if(unreadIds.length){
+    await sb.from('feedback').update({ read:true }).in('id', unreadIds);
+    await refreshUnreadBadge();
+  }
 }
 $('feedbackClose').addEventListener('click', ()=> $('feedbackPanel').classList.remove('open'));
 $('feedbackSubmit').addEventListener('click', submitFeedback);
@@ -1403,11 +1546,101 @@ function render(){
   $('addBtn').style.display = isOwner ? 'inline-block' : 'none';
   if(activeTab==='graficos') renderGraficosTab();
 }
-$('langPt').addEventListener('click', ()=>{ lang='pt'; applyTranslations(); renderCategoryNav(); render(); });
-$('langEn').addEventListener('click', ()=>{ lang='en'; applyTranslations(); renderCategoryNav(); render(); });
+$('langPt').addEventListener('click', ()=>{ lang='pt'; applyTranslations(); renderCategoryNav(); render(); if(activeTab==='mercado') loadMarketplace(); });
+$('langEn').addEventListener('click', ()=>{ lang='en'; applyTranslations(); renderCategoryNav(); render(); if(activeTab==='mercado') loadMarketplace(); });
+
+/* ---------- PERFIL ---------- */
+let myProfileCache = null;
+let pendingAvatar = null;
+
+async function loadProfileTab(){
+  const { data } = await sb.from('profiles').select('*').eq('id', currentUserId).single();
+  myProfileCache = data || { username: viewingUsername };
+  $('avatarPreview').innerHTML = myProfileCache.avatar_url ? `<img src="${myProfileCache.avatar_url}">` : '👤';
+  $('p_displayName').value = myProfileCache.display_name || '';
+  $('p_phone').value = myProfileCache.phone || '';
+  $('p_bio').value = myProfileCache.bio || '';
+  $('currentUsernameDisplay').textContent = '@' + myProfileCache.username;
+  $('usernameEditRow').style.display = 'none';
+  $('p_newUsername').value = myProfileCache.username;
+  $('userSearchResults').innerHTML = '';
+  $('userSearchInput').value = '';
+}
+
+$('avatarUploadBtn').addEventListener('click', ()=> $('avatarInput').click());
+$('avatarInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file || !file.type.startsWith('image/')){ toast(t('toast_image_error'), 'error'); return; }
+  try{
+    const dataUrl = await resizeImage(file);
+    pendingAvatar = dataUrl;
+    $('avatarPreview').innerHTML = `<img src="${dataUrl}">`;
+  }catch(err){ toast(t('toast_image_process_error'), 'error'); }
+});
+
+$('saveProfileBtn').addEventListener('click', async ()=>{
+  $('saveProfileBtn').disabled = true;
+  try{
+    const payload = {
+      display_name: $('p_displayName').value.trim() || null,
+      phone: $('p_phone').value.trim() || null,
+      bio: $('p_bio').value.trim() || null,
+    };
+    if(pendingAvatar){
+      const blob = await (await fetch(pendingAvatar)).blob();
+      const path = `avatars/${currentUserId}.jpg`;
+      const { error: upErr } = await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { upsert:true, contentType:'image/jpeg' });
+      if(!upErr){
+        const { data: pub } = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+        payload.avatar_url = pub.publicUrl + '?t=' + Date.now();
+      }
+    }
+    const { error } = await sb.from('profiles').update(payload).eq('id', currentUserId);
+    if(error) throw error;
+    pendingAvatar = null;
+    toast(t('toast_card_updated'), 'success');
+    loadProfileTab();
+  }catch(e){ toast(t('toast_save_error'), 'error'); }
+  finally{ $('saveProfileBtn').disabled = false; }
+});
+
+$('editUsernameBtn').addEventListener('click', ()=>{
+  $('usernameEditRow').style.display = $('usernameEditRow').style.display === 'none' ? 'block' : 'none';
+});
+$('saveUsernameBtn').addEventListener('click', async ()=>{
+  const newUname = $('p_newUsername').value.trim();
+  if(!newUname){ toast(t('username_required'), 'error'); return; }
+  if(newUname === myProfileCache.username){ $('usernameEditRow').style.display = 'none'; return; }
+  const { error } = await sb.from('profiles').update({ username: newUname }).eq('id', currentUserId);
+  if(error){ toast(t('username_taken'), 'error'); return; }
+  viewingUsername = newUname;
+  toast(t('toast_card_updated'), 'success');
+  applyTranslations();
+  loadProfileTab();
+});
+
+async function searchUsers(){
+  const q = $('userSearchInput').value.trim();
+  if(!q){ $('userSearchResults').innerHTML = ''; return; }
+  const { data, error } = await sb.from('profiles').select('id, username, display_name, avatar_url').ilike('username', `%${q}%`).limit(15);
+  const results = (error ? [] : data).filter(p=>p.id !== currentUserId);
+  $('userSearchResults').innerHTML = results.length === 0
+    ? `<p style="color:var(--text-muted); font-size:13px;">${lang==='en'?'No collectors found.':'Nenhum colecionador encontrado.'}</p>`
+    : results.map(p => `
+        <div class="search-result-item" data-uid="${p.id}">
+          <div class="avatar-preview">${p.avatar_url ? `<img src="${p.avatar_url}">` : '👤'}</div>
+          <div class="info"><div class="uname">@${p.username}</div>${p.display_name ? `<div class="dname">${p.display_name}</div>` : ''}</div>
+        </div>`).join('');
+  $('userSearchResults').querySelectorAll('[data-uid]').forEach(el=>{
+    el.addEventListener('click', ()=>{ window.location.href = 'index.html?view=' + encodeURIComponent(el.dataset.uid); });
+  });
+}
+$('userSearchBtn').addEventListener('click', searchUsers);
+$('userSearchInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') searchUsers(); });
 
 (async function start(){
   if(!sb) return;
+  loadExchangeRate().then(()=>{ if(lang==='en'){ render(); if(activeTab==='graficos') renderGraficosTab(); if(activeTab==='mercado') loadMarketplace(); } });
   const ok = await initAuth();
   if(ok) await loadData();
 })();
